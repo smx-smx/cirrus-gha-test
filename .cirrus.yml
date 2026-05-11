@@ -1,0 +1,26 @@
+env:
+  CIRRUS_CLONE_DEPTH: 1
+  CGO_ENABLED: 0
+
+#
+# Linux x64 — builds inside a Dockerfile-defined container image.
+# Demonstrates:
+#   1. Dockerfile-as-CI-environment with push to ghcr.io
+#   2. Go module caching (fingerprinted on go.sum)
+#   3. Build artifacts uploaded to GitHub Actions
+#
+linux_x64_task:
+
+  container:
+    dockerfile: .ci/linux/Dockerfile
+
+  go_modules_cache:
+    folder: $GOPATH/pkg/mod
+    fingerprint_script: sha256sum go.sum
+    populate_script: go mod download
+
+  build_script: go build -o bin/demo .
+  test_script:  go vet ./...
+
+  binaries_artifacts:
+    path: "bin/*"
