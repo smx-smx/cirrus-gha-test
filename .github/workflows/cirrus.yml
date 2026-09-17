@@ -17,7 +17,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
-            task_name: linux_x64_task
+            task_name: linux_x64
 
     steps:
       - name: Checkout project
