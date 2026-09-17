@@ -12,6 +12,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      actions: write # module-cache translation talks to the GHA cache service
     strategy:
       fail-fast: false
       matrix:
