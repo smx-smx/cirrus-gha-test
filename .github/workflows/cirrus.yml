@@ -34,6 +34,17 @@ jobs:
         shell: bash
         run: sudo apt-get update && sudo apt-get install -y qemu-system-x86
 
+      - name: Enable KVM for the runner user
+        shell: bash
+        # /dev/kvm exists on hosted runners but is root:kvm 0660; without this
+        # the FreeBSD task falls back to (much slower) TCG emulation.
+        # See https://github.com/actions/runner-images/issues/8542
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          ls -l /dev/kvm || true
+
       - name: Checkout cirrus-cli
         uses: actions/checkout@v4
         with:
