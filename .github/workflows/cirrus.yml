@@ -33,18 +33,30 @@ jobs:
 
       - name: Install QEMU
         shell: bash
-        run: sudo apt-get update && sudo apt-get install -y qemu-system-x86
+        # Only the x64 leg needs system emulation (FreeBSD task); the ARM
+        # leg skips it and would just burn minutes installing qemu-system-x86.
+        run: |
+          if [ "$(uname -m)" = "x86_64" ]; then
+            sudo apt-get update && sudo apt-get install -y qemu-system-x86
+          else
+            echo "non-x64 runner, skipping QEMU install"
+          fi
 
       - name: Enable KVM for the runner user
         shell: bash
-        # /dev/kvm exists on hosted runners but is root:kvm 0660; without this
-        # the FreeBSD task falls back to (much slower) TCG emulation.
+        # /dev/kvm exists on x64 hosted runners but as root:kvm 0660; ARM
+        # runners have no KVM device at all, so skip there (the FreeBSD
+        # task is x64-only and skips itself on ARM anyway).
         # See https://github.com/actions/runner-images/issues/8542
         run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-          ls -l /dev/kvm || true
+          if [ -e /dev/kvm ]; then
+            echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+            sudo udevadm control --reload-rules
+            sudo udevadm trigger --name-match=kvm || true
+            ls -l /dev/kvm
+          else
+            echo "no /dev/kvm on this runner, skipping"
+          fi
 
       - name: Checkout cirrus-cli
         uses: actions/checkout@v4
