@@ -50,3 +50,25 @@ freebsd_task:
 
   binaries_artifacts:
     path: "bin/*"
+
+#
+# Linux ARM64 — Cirrus CI ran arm_container tasks on Graviton; here the
+# ubuntu-24.04-arm runner (Ampere Altra, same server-ARM class) runs them
+# natively. The CLI skips foreign-arch tasks per runner automatically, so
+# plain `cirrus run` does the right thing on both legs.
+#
+linux_arm64_task:
+
+  arm_container:
+    image: golang:1.25
+
+  go_modules_cache:
+    folder: $GOPATH/pkg/mod
+    fingerprint_script: sha256sum go.sum
+    populate_script: go mod download
+
+  build_script: go build -o bin/demo .
+  test_script: go vet ./...
+
+  binaries_artifacts:
+    path: "bin/*"
