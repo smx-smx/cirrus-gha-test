@@ -44,6 +44,7 @@ freebsd_task:
     fingerprint_script: sha256sum go.sum
     populate_script: go mod download
 
+  install_script: pkg install -y go
   build_script: go build -o bin/demo .
   test_script: go vet ./...
 
