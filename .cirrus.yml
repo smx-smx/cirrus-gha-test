@@ -24,3 +24,30 @@ linux_x64_task:
 
   binaries_artifacts:
     path: "bin/*"
+
+#
+# FreeBSD x64 — Cirrus CI ran this on a FreeBSD GCE VM (freebsd_instance).
+# GHA has no FreeBSD runners, so the CLI port boots a FreeBSD cloud image
+# under QEMU on the ubuntu runner (same approach as vmactions/freebsd-vm),
+# then runs the scripts inside the VM. Cache/artifacts reuse the same
+# GHA translation as the Linux task above.
+# NOTE: CLI support (freebsd_instance parser + QEMU backend) is not landed
+# yet — until then this task validates cleanly and is Skipped at run time.
+#
+freebsd_task:
+
+  freebsd_instance:
+    image_family: freebsd-14-3
+
+  # Keep the same shape as the Linux task to prove syntax parity:
+  # cached modules, build, vet, uploaded binaries.
+  go_modules_cache:
+    folder: $GOPATH/pkg/mod
+    fingerprint_script: sha256sum go.sum
+    populate_script: go mod download
+
+  build_script: go build -o bin/demo .
+  test_script: go vet ./...
+
+  binaries_artifacts:
+    path: "bin/*"

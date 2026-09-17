@@ -1,6 +1,11 @@
 name: Cirrus CLI Demo
 on:
   workflow_dispatch:
+    inputs:
+      task:
+        description: 'Cirrus task to run (name without the _task suffix)'
+        default: 'linux_x64'
+        required: false
   push:
     branches: [main]
   pull_request:
@@ -57,4 +62,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cirrus run --dockerfile-image-push --container-lazy-pull ${{ matrix.task_name }}
+          # Manual dispatches can pick a task (e.g. freebsd); pushes/PRs use the matrix default.
+          cirrus run --dockerfile-image-push --container-lazy-pull ${{ inputs.task || matrix.task_name }}
