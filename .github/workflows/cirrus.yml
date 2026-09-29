@@ -79,6 +79,8 @@ jobs:
           script: |
             core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env['ACTIONS_RUNTIME_TOKEN']);
             core.exportVariable('ACTIONS_RESULTS_URL', process.env['ACTIONS_RESULTS_URL']);
+            // mask the token in logs: it stays env-visible to later steps
+            core.setSecret(process.env['ACTIONS_RUNTIME_TOKEN']);
 
       - name: Run cirrus
         shell: bash
